@@ -18,10 +18,10 @@ export async function POST(
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
 
-    // 2. 创建新任务，复制所有7维配置
+    // 2. 创建新任务，复制所有7维配置，状态为 draft（待配置）
     const newTask = await prisma.task.create({
       data: {
-        status: "generating_images",
+        status: "draft",
         // 复制7维配置
         coreEmotion: sourceTask.coreEmotion,
         architecturalStyle: sourceTask.architecturalStyle,

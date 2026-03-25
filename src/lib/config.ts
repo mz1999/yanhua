@@ -316,6 +316,7 @@ export const culturesByRegion = {
 
 // ========== 状态类型 ==========
 export type TaskStatus =
+  | "draft"
   | "generating_images"
   | "selecting"
   | "generating_video"

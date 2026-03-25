@@ -66,6 +66,7 @@ export default function HomePage() {
 
   function getStatusLabel(status: string) {
     const labels: Record<string, string> = {
+      draft: "待配置",
       generating_images: "生成图片中",
       selecting: "选择图片",
       generating_video: "生成视频中",
@@ -76,6 +77,7 @@ export default function HomePage() {
 
   function getStatusColor(status: string) {
     const colors: Record<string, string> = {
+      draft: "bg-gray-500",
       generating_images: "bg-[var(--color-loading)]",
       selecting: "bg-[var(--color-loading)]",
       generating_video: "bg-[var(--color-loading)]",
@@ -196,6 +198,8 @@ export default function HomePage() {
                           <div className="w-full h-full flex items-center justify-center">
                             {task.status === "generating_video" ? (
                               <Film className="w-10 h-10 text-[var(--color-text-tertiary)]" />
+                            ) : task.status === "draft" ? (
+                              <Settings className="w-10 h-10 text-[var(--color-text-tertiary)]" />
                             ) : (
                               <ImageIcon className="w-10 h-10 text-[var(--color-text-tertiary)]" />
                             )}
