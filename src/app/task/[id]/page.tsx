@@ -7,7 +7,22 @@ import { Button } from "@/components/ui/button";
 import { GenerationCard } from "@/components/ui/generation-card";
 import { StepIndicator } from "@/components/ui/step-indicator";
 import type { Task } from "@/lib/config";
-import { ArrowLeft, RefreshCw, Check, ArrowRight, Film, Copy, Home, Plus } from "lucide-react";
+import {
+  ArrowLeft,
+  RefreshCw,
+  Check,
+  ArrowRight,
+  Film,
+  Copy,
+  Home,
+  Plus,
+  Edit3,
+  X,
+  Save,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+} from "lucide-react";
 
 // 模拟图片生成
 const mockImages = [
@@ -39,6 +54,15 @@ export default function TaskPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+
+  // 提示词编辑相关状态
+  const [generatedPrompt, setGeneratedPrompt] = useState<string>("");
+  const [isEditingPrompt, setIsEditingPrompt] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState("");
+  const [showPromptPanel, setShowPromptPanel] = useState(false);
+
+  // 克隆相关状态
+  const [isCloning, setIsCloning] = useState(false);
 
   useEffect(() => {
     if (taskId) {
@@ -82,10 +106,18 @@ export default function TaskPage() {
       if (res.ok) {
         const data = await res.json();
         setTask(data.task);
+        // 保存生成的提示词
+        if (data.prompt) {
+          setGeneratedPrompt(data.prompt);
+          setCustomPrompt(data.prompt);
+        }
       }
     } catch (error) {
       console.error("Failed to generate images:", error);
       // 模拟数据
+      const mockPrompt = "治愈系风格，精细漫画，岭南建筑，广州的老街咖啡馆，雨天，自然窗光、斑驳光影，高清细节，电影质感，治愈氛围，竖屏构图，9:16比例，适合手机竖屏观看";
+      setGeneratedPrompt(mockPrompt);
+      setCustomPrompt(mockPrompt);
       setTask((prev) =>
         prev
           ? {
@@ -95,6 +127,46 @@ export default function TaskPage() {
             }
           : null
       );
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  async function generateImagesWithCustomPrompt() {
+    if (!customPrompt.trim()) return;
+
+    setGenerating(true);
+    // 模拟 API 调用延迟
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    try {
+      const res = await fetch(`/api/tasks/${taskId}/generate-images-custom`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customPrompt: customPrompt.trim() }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setTask(data.task);
+        setSelectedImage(null); // 清除之前的选择
+        setIsEditingPrompt(false);
+      }
+    } catch (error) {
+      console.error("Failed to generate images with custom prompt:", error);
+      // 模拟数据
+      setTask((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: "selecting",
+              images: mockImages.map((url) => url + "?" + Date.now()), // 模拟不同的图片
+              selectedImage: undefined,
+            }
+          : null
+      );
+      setSelectedImage(null);
+      setIsEditingPrompt(false);
     } finally {
       setGenerating(false);
     }
@@ -132,6 +204,26 @@ export default function TaskPage() {
       );
     } finally {
       setGenerating(false);
+    }
+  }
+
+  async function cloneTask() {
+    setIsCloning(true);
+    try {
+      const res = await fetch(`/api/tasks/${taskId}/clone`, {
+        method: "POST",
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // 跳转到新任务
+        router.push(`/task/${data.task.id}`);
+      }
+    } catch (error) {
+      console.error("Failed to clone task:", error);
+      alert("复制项目失败，请重试");
+    } finally {
+      setIsCloning(false);
     }
   }
 
@@ -223,36 +315,154 @@ export default function TaskPage() {
               </div>
             )}
 
+            {/* Prompt Editor Panel */}
+            {generatedPrompt && (
+              <div className="max-w-3xl mx-auto mt-8">
+                <button
+                  onClick={() => setShowPromptPanel(!showPromptPanel)}
+                  className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors mb-3"
+                >
+                  {showPromptPanel ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                  <span>生成的提示词</span>
+                </button>
+
+                {showPromptPanel && (
+                  <div className="bg-[var(--color-surface)] rounded-xl p-4 border border-[var(--color-border)]">
+                    {isEditingPrompt ? (
+                      <div className="space-y-3">
+                        <textarea
+                          value={customPrompt}
+                          onChange={(e) => setCustomPrompt(e.target.value)}
+                          className="w-full h-32 p-3 text-sm bg-white border border-[var(--color-border)] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)]"
+                          placeholder="输入自定义提示词..."
+                        />
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => {
+                              setIsEditingPrompt(false);
+                              setCustomPrompt(generatedPrompt);
+                            }}
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            取消
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={generateImagesWithCustomPrompt}
+                            disabled={generating || !customPrompt.trim()}
+                          >
+                            {generating ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                生成中...
+                              </>
+                            ) : (
+                              <>
+                                <Save className="w-4 h-4 mr-1" />
+                                使用此提示词重新生成
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <p className="text-sm text-[var(--color-text-primary)] leading-relaxed">
+                          {generatedPrompt}
+                        </p>
+                        <div className="flex justify-end">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setIsEditingPrompt(true)}
+                          >
+                            <Edit3 className="w-4 h-4 mr-1" />
+                            编辑提示词
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Actions */}
             <div className="flex justify-between items-center max-w-3xl mx-auto mt-10 pt-6 border-t border-[var(--color-border)]">
-              <Button
-                variant="secondary"
-                onClick={generateImages}
-                disabled={generating}
-              >
-                <RefreshCw className={`w-4 h-4 mr-2 ${generating ? "animate-spin" : ""}`} />
-                重新生成
-              </Button>
-              <Button
-                onClick={() => {
-                  if (selectedImage) {
-                    generateVideo();
-                  }
-                }}
-                disabled={!selectedImage || generating}
-              >
-                {generating ? (
-                  <>
-                    <div className="w-4 h-4 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    生成中...
-                  </>
-                ) : (
-                  <>
-                    生成视频
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </>
-                )}
-              </Button>
+              {/* Left: Edit Prompt & Clone */}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    if (!generatedPrompt) {
+                      // 如果没有提示词，先生成
+                      generateImages();
+                    } else {
+                      setShowPromptPanel(true);
+                      setIsEditingPrompt(true);
+                    }
+                  }}
+                  disabled={generating}
+                >
+                  <Edit3 className="w-4 h-4 mr-2" />
+                  编辑提示词
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={cloneTask}
+                  disabled={isCloning}
+                >
+                  {isCloning ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      复制中...
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4 mr-2" />
+                      复制项目
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* Right: Regenerate & Generate Video */}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={generateImages}
+                  disabled={generating}
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${generating ? "animate-spin" : ""}`} />
+                  重新生成
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (selectedImage) {
+                      generateVideo();
+                    }
+                  }}
+                  disabled={!selectedImage || generating}
+                >
+                  {generating ? (
+                    <>
+                      <div className="w-4 h-4 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      生成中...
+                    </>
+                  ) : (
+                    <>
+                      生成视频
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         ) : (

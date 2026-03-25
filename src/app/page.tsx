@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import type { Task } from "@/lib/config";
-import { Plus, Settings, Image as ImageIcon, Film } from "lucide-react";
+import { Plus, Settings, Image as ImageIcon, Film, Copy, Loader2 } from "lucide-react";
 
 // 解析 images - 支持 string[] 或 JSON string
 function parseImages(images: string[] | string | undefined | null): string[] {
@@ -19,8 +20,10 @@ function parseImages(images: string[] | string | undefined | null): string[] {
 }
 
 export default function HomePage() {
+  const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cloningId, setCloningId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchTasks();
@@ -35,6 +38,29 @@ export default function HomePage() {
       console.error("Failed to fetch tasks:", error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function cloneTask(e: React.MouseEvent, taskId: string) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setCloningId(taskId);
+    try {
+      const res = await fetch(`/api/tasks/${taskId}/clone`, {
+        method: "POST",
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // 跳转到新任务
+        router.push(`/task/${data.task.id}`);
+      }
+    } catch (error) {
+      console.error("Failed to clone task:", error);
+      alert("复制项目失败，请重试");
+    } finally {
+      setCloningId(null);
     }
   }
 
@@ -186,6 +212,19 @@ export default function HomePage() {
                           {getStatusLabel(task.status)}
                         </span>
                       </div>
+                      {/* Clone Button */}
+                      <button
+                        onClick={(e) => cloneTask(e, task.id)}
+                        disabled={cloningId === task.id}
+                        className="absolute top-3 right-3 p-2 rounded-full bg-white/90 backdrop-blur-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-white shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-200 disabled:opacity-50"
+                        title="复制项目"
+                      >
+                        {cloningId === task.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
+                      </button>
                     </div>
                     {/* Info */}
                     <div className="p-4">
