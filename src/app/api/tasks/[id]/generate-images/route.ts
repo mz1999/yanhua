@@ -260,12 +260,13 @@ export async function POST(
     // 3. 调用即梦 API 生成图片
     const imageUrls = await generateImagesWithJimeng(prompt);
 
-    // 4. 更新任务状态和图片
+    // 4. 更新任务状态和图片，清除之前的选择
     const updatedTask = await prisma.task.update({
       where: { id },
       data: {
         status: "selecting",
         images: JSON.stringify(imageUrls),
+        selectedImage: null,
       },
     });
 
