@@ -211,32 +211,44 @@ export async function POST(request: NextRequest) {
     // 推理配置：增大思维链预算，开启推理模式
     const thinkingBudget = 8192; // 思维链最大 token 数
 
+    // 构建请求体
+    const requestBody = {
+      model,
+      messages: [
+        {
+          role: "system",
+          content: META_PROMPT,
+        },
+        {
+          role: "user",
+          content: `现在，请根据以下配置生成提示词：\n\n${intentDescription}`,
+        },
+      ],
+      temperature: 0.8,
+      max_tokens: 4096,
+      extra_body: {
+        enable_thinking: true,
+        thinking_budget: thinkingBudget
+      }
+    };
+
+    // 后台输出提交给 LLM 的完整提示词
+    console.log("\n========== 提交给 LLM 的 System 提示词 ==========");
+    console.log(requestBody.messages[0].content);
+    console.log("\n========== 提交给 LLM 的 User 提示词 ==========");
+    console.log(requestBody.messages[1].content);
+    console.log("\n========== 请求配置 ==========");
+    console.log(`模型: ${model}`);
+    console.log(`推理预算: ${thinkingBudget} tokens`);
+    console.log("================================\n");
+
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({
-        model,
-        messages: [
-          {
-            role: "system",
-            content: META_PROMPT,
-          },
-          {
-            role: "user",
-            content: `现在，请根据以下配置生成提示词：\n\n${intentDescription}`,
-          },
-        ],
-        temperature: 0.8,
-        max_tokens: 4096,
-        // 支持推理模式（DeepSeek-R1 或 V3.2）
-        extra_body: {
-          enable_thinking: true,      // 开启思考模式
-          thinking_budget: thinkingBudget  // 思维链最大 token 数
-        }
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
