@@ -47,5 +47,6 @@ next-env.d.ts
 
 # database
 *.db
+*.db*
 *.db-journal
 prisma/*.db
