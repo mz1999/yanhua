@@ -208,6 +208,9 @@ export async function POST(request: NextRequest) {
     const apiUrl = process.env.LLM_API_URL || "https://api.siliconflow.cn/v1/chat/completions";
     const model = process.env.LLM_MODEL || "deepseek-ai/DeepSeek-V3.2";
 
+    // 推理配置：增大思维链预算，开启推理模式
+    const thinkingBudget = 8192; // 思维链最大 token 数
+
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
@@ -227,7 +230,12 @@ export async function POST(request: NextRequest) {
           },
         ],
         temperature: 0.8,
-        max_tokens: 800,
+        max_tokens: 4096,
+        // 支持推理模式（DeepSeek-R1 或 V3.2）
+        extra_body: {
+          enable_thinking: true,      // 开启思考模式
+          thinking_budget: thinkingBudget  // 思维链最大 token 数
+        }
       }),
     });
 
@@ -238,12 +246,34 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
-    const rawContent = data.choices[0]?.message?.content?.trim() || "";
+    const message = data.choices[0]?.message;
+    const rawContent = message?.content?.trim() || "";
+    const reasoningContent = message?.reasoning_content || "";
     const generatedPrompt = extractPrompt(rawContent);
+
+    // 后台输出推理过程和最终结果
+    console.log("\n========== LLM 推理过程 ==========");
+    console.log(reasoningContent || "（模型未返回推理内容）");
+    console.log("\n========== 最终回答 ==========");
+    console.log(rawContent);
+    console.log("\n========== 提取的提示词 ==========");
+    console.log(generatedPrompt);
+    console.log("================================\n");
+
+    // 输出 token 使用情况
+    const usage = data.usage;
+    if (usage) {
+      console.log("Token 使用情况:");
+      console.log(`  - 输入: ${usage.prompt_tokens}`);
+      console.log(`  - 输出: ${usage.completion_tokens}`);
+      console.log(`  - 推理: ${usage.completion_tokens_details?.reasoning_tokens || 0}`);
+      console.log(`  - 总计: ${usage.total_tokens}`);
+    }
 
     return NextResponse.json({
       prompt: generatedPrompt,
       raw: rawContent,
+      reasoning: reasoningContent,
       source: "siliconflow",
     });
   } catch (error) {
