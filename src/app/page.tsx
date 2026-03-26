@@ -5,19 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import type { Task } from "@/lib/config";
-import { Plus, Settings, Image as ImageIcon, Film, Copy, Loader2 } from "lucide-react";
-
-// 解析 images - 支持 string[] 或 JSON string
-function parseImages(images: string[] | string | undefined | null): string[] {
-  if (!images) return [];
-  if (Array.isArray(images)) return images;
-  try {
-    const parsed = JSON.parse(images);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
+import { getStatusLabel, getStatusColor } from "@/lib/config";
+import { parseImages } from "@/lib/utils";
+import { Plus, Settings, Image as ImageIcon, Copy, Loader2 } from "lucide-react";
 
 export default function HomePage() {
   const router = useRouter();
@@ -62,28 +52,6 @@ export default function HomePage() {
     } finally {
       setCloningId(null);
     }
-  }
-
-  function getStatusLabel(status: string) {
-    const labels: Record<string, string> = {
-      draft: "待配置",
-      generating_images: "生成图片中",
-      selecting: "选择图片",
-      generating_video: "生成视频中",
-      completed: "已完成",
-    };
-    return labels[status] || status;
-  }
-
-  function getStatusColor(status: string) {
-    const colors: Record<string, string> = {
-      draft: "bg-gray-500",
-      generating_images: "bg-[var(--color-loading)]",
-      selecting: "bg-[var(--color-loading)]",
-      generating_video: "bg-[var(--color-loading)]",
-      completed: "bg-[var(--color-success)]",
-    };
-    return colors[status] || "bg-gray-400";
   }
 
   return (
@@ -185,20 +153,9 @@ export default function HomePage() {
                           );
                         }
 
-                        if (task.videoUrl) {
-                          return (
-                            <video
-                              src={task.videoUrl}
-                              className="w-full h-full object-cover"
-                            />
-                          );
-                        }
-
                         return (
                           <div className="w-full h-full flex items-center justify-center">
-                            {task.status === "generating_video" ? (
-                              <Film className="w-10 h-10 text-[var(--color-text-tertiary)]" />
-                            ) : task.status === "draft" ? (
+                            {task.status === "draft" ? (
                               <Settings className="w-10 h-10 text-[var(--color-text-tertiary)]" />
                             ) : (
                               <ImageIcon className="w-10 h-10 text-[var(--color-text-tertiary)]" />

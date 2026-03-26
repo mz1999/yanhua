@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { Task } from "@/lib/config";
-import { ArrowLeft, Copy, Check, Home, Plus, Film } from "lucide-react";
+import { ArrowLeft, Copy, Check, Home, Plus } from "lucide-react";
 
 export default function PublishPage() {
   const params = useParams();
@@ -94,21 +94,20 @@ export default function PublishPage() {
             <Check className="w-8 h-8 text-[var(--color-success)]" />
           </div>
           <h2 className="text-h1 mb-3 text-[var(--color-text-primary)]">
-            视频已生成！
+            创作完成！
           </h2>
           <p className="text-body text-[var(--color-text-secondary)]">
             以下是为你准备的发布内容
           </p>
         </div>
 
-        {/* Video Preview */}
-        {task.videoUrl && (
+        {/* Selected Image Preview */}
+        {task.selectedImage && (
           <div className="mb-10 rounded-2xl overflow-hidden bg-black shadow-lg">
-            <video
-              src={task.videoUrl}
-              controls
-              className="w-full aspect-video"
-              poster={task.selectedImage}
+            <img
+              src={task.selectedImage}
+              alt="Selected"
+              className="w-full aspect-video object-cover"
             />
           </div>
         )}

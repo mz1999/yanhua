@@ -14,6 +14,7 @@ import {
   weatherOptions,
   lightingQualities,
   paintingStyles,
+  focuses,
 } from "@/lib/config";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, Wand2, Check, ChevronDown, Cloud, Sun, CloudRain, Snowflake, Moon } from "lucide-react";
@@ -39,6 +40,7 @@ export default function CreatePage() {
     weather: "",
     lightingQualities: [] as string[],
     paintingStyles: [] as string[],
+    focus: "",
     description: "",
   });
 
@@ -49,7 +51,8 @@ export default function CreatePage() {
     config.coreEmotion &&
     config.architecturalStyle &&
     config.spaceFunction &&
-    config.weather;
+    config.weather &&
+    config.focus;
 
   // 处理单选
   const handleSingleSelect = (field: keyof typeof config, value: string) => {
@@ -123,7 +126,7 @@ export default function CreatePage() {
             配置你的画面
           </h2>
           <p className="text-body text-[var(--color-text-secondary)]">
-            从7个维度组合，创作独特的治愈空间
+            从8个维度组合，创作独特的治愈空间
           </p>
         </div>
 
@@ -326,6 +329,38 @@ export default function CreatePage() {
                   description={style.description}
                   selected={config.paintingStyles.includes(style.label)}
                   onClick={() => handleMultiToggle("paintingStyles", style.label)}
+                />
+              ))}
+            </div>
+          </section>
+
+          {/* 8. 构图重点（单选） */}
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              {sectionNumber(8)}
+              <h3 className="text-h3 text-[var(--color-text-primary)]">构图重点</h3>
+              <span className="text-xs text-[var(--color-error)]">*</span>
+            </div>
+            <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+              画面想要突出表现的主体
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {focuses.map((focus) => (
+                <EmotionCard
+                  key={focus.id}
+                  label={focus.label}
+                  description={focus.description}
+                  useCase={
+                    focus.id === "space"
+                      ? "推荐用于场景展示"
+                      : focus.id === "person"
+                        ? "推荐用于人物故事"
+                        : focus.id === "balanced"
+                          ? "推荐用于生活记录"
+                          : "推荐用于细节表达"
+                  }
+                  selected={config.focus === focus.label}
+                  onClick={() => handleSingleSelect("focus", focus.label)}
                 />
               ))}
             </div>

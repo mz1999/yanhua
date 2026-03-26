@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 /**
  * 言画配置体系 v3 - 元提示词
- * 核心改进：7维度配置体系
+ * 核心改进：8维度配置体系
  * - 核心情绪：决定画面整体情感基调
  * - 建筑风格/文化基因：决定建筑语言和文化元素
  * - 地域：真实地理位置，与建筑风格叠加
@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
  * - 天气/氛围：天气状况和特殊氛围
  * - 光影质感：光线特征，可多选叠加
  * - 绘画风格：绘制风格/质感
+ * - 构图重点：画面想要突出的主体
  */
 const META_PROMPT = `你是一位擅长构建"精神乌托邦"的场景设计师。你的任务是将用户的配置，转化为一个能承载现代人情感寄托的、具有电影质感的治愈空间。
 
@@ -30,7 +31,7 @@ const META_PROMPT = `你是一位擅长构建"精神乌托邦"的场景设计师
    - 引发观众互动欲：让人想评论"这是哪里"、"我也想去"
    - 既有美感又有真实感，不会让人觉得"虚假"或"遥不可及"
 
-## 7维度处理方法
+## 8维度处理方法
 
 [coreEmotion] 核心情绪 → 决定整体情感基调、色调倾向
 - 治愈系：温暖柔和、让人心安的色调
@@ -45,6 +46,11 @@ const META_PROMPT = `你是一位擅长构建"精神乌托邦"的场景设计师
 [weather] 天气/氛围 → 决定环境光线、天气效果
 [lightingQualities] 光影质感 → 光线的质感特征，可多选叠加
 [paintingStyles] 绘画风格 → 画面的绘制风格/质感
+[focus] 构图重点 → 决定画面的主体和构图方式
+- 空间为主：人物占比小（约1/8），突出环境氛围
+- 人物为主：人物占比大（约1/2），突出人物形象
+- 人与空间平衡：人物占比适中（约1/4），两者兼顾
+- 细节特写：聚焦特定物品或局部细节
 
 ## 输出格式
 
@@ -120,12 +126,13 @@ const META_PROMPT = `你是一位擅长构建"精神乌托邦"的场景设计师
 - 天气：雨天
 - 光影质感：自然窗光、斑驳光影
 - 绘画风格：精细漫画、胶片质感
+- 构图重点：人与空间平衡
 
 输出：<prompt>**核心风格：**
 治愈系精细漫画风格，融合胶片质感的温暖色调，柔和笔触中带有旧时光的温柔质感。
 
 **整体场景与构图：**
-广角中景，人物在画面中占比较小（约占画面1/6），位于画面右下角。广州老城区一间融合岭南元素的社区咖啡馆角落，雨天午后。春雨绵绵中，满洲窗的彩色玻璃过滤出斑斓光斑，与窗外树枝投射的斑驳光影交织在老旧花砖地面上，营造出静谧治愈的避世空间。
+广角中景，人物在画面中占比较小（约占画面1/4），位于画面右下角。广州老城区一间融合岭南元素的社区咖啡馆角落，雨天午后。春雨绵绵中，满洲窗的彩色玻璃过滤出斑斓光斑，与窗外树枝投射的斑驳光影交织在老旧花砖地面上，营造出静谧治愈的避世空间。
 
 **人物与动作：**
 一位二十多岁的中国女子，黑长发松松挽起，穿着米白色棉麻连衣裙。赤脚蜷坐在藤编沙发角落，双手捧着一杯还冒着热气的拿铁，视线温柔地望向窗外雨景，神情带着雨天特有的慵懒与满足感。
@@ -169,6 +176,7 @@ export async function POST(request: NextRequest) {
       weather,
       lightingQualities,
       paintingStyles,
+      focus,
       description,
     } = body;
 
@@ -182,6 +190,7 @@ export async function POST(request: NextRequest) {
       weather,
       lightingQualities,
       paintingStyles,
+      focus,
       description,
     });
 
@@ -195,15 +204,18 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 调用硅基流动 API
-    const response = await fetch("https://api.siliconflow.cn/v1/chat/completions", {
+    // 调用 LLM API（默认硅基流动，可通过环境变量配置）
+    const apiUrl = process.env.LLM_API_URL || "https://api.siliconflow.cn/v1/chat/completions";
+    const model = process.env.LLM_MODEL || "deepseek-ai/DeepSeek-V3.2";
+
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "deepseek-ai/DeepSeek-V3.2",
+        model,
         messages: [
           {
             role: "system",
@@ -255,6 +267,7 @@ function buildIntentDescription(params: {
   weather?: string;
   lightingQualities?: string[];
   paintingStyles?: string[];
+  focus?: string;
   description?: string;
 }): string {
   const parts: string[] = [];
@@ -266,6 +279,7 @@ function buildIntentDescription(params: {
   if (params.weather) parts.push(`天气/氛围：${params.weather}`);
   if (params.lightingQualities?.length) parts.push(`光影质感：${params.lightingQualities.join("、")}`);
   if (params.paintingStyles?.length) parts.push(`绘画风格：${params.paintingStyles.join("、")}`);
+  if (params.focus) parts.push(`构图重点：${params.focus}`);
   if (params.description) parts.push(`补充描述：${params.description}`);
   if (params.userInput) parts.push(`额外补充：${params.userInput}`);
 
@@ -280,7 +294,7 @@ function generateMockPrompt(input: string): string {
 治愈系精细漫画风格，融合胶片质感的温暖色调，柔和笔触中带有旧时光的温柔质感。
 
 **整体场景与构图：**
-广角中景，人物在画面中占比较小（约占画面1/6），位于画面右下角。广州老城区一间融合岭南元素的社区咖啡馆角落，雨天午后。春雨绵绵中，满洲窗的彩色玻璃过滤出斑斓光斑，与窗外树枝投射的斑驳光影交织在老旧花砖地面上，营造出静谧治愈的避世空间。
+广角中景，人物在画面中占比适中（约占画面1/4），位于画面右下角。广州老城区一间融合岭南元素的社区咖啡馆角落，雨天午后。春雨绵绵中，满洲窗的彩色玻璃过滤出斑斓光斑，与窗外树枝投射的斑驳光影交织在老旧花砖地面上，营造出静谧治愈的避世空间。
 
 **人物与动作：**
 一位二十多岁的中国女子，黑长发松松挽起，穿着米白色棉麻连衣裙。赤脚蜷坐在藤编沙发角落，双手捧着一杯还冒着热气的拿铁，视线温柔地望向窗外雨景，神情带着雨天特有的慵懒与满足感。

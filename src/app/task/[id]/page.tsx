@@ -16,14 +16,13 @@ import {
   weatherOptions,
   lightingQualities,
   paintingStyles,
+  focuses,
 } from "@/lib/config";
-import { cn } from "@/lib/utils";
+import { cn, parseImages, parseJSON } from "@/lib/utils";
 import {
   ArrowLeft,
   RefreshCw,
   Check,
-  ArrowRight,
-  Film,
   Copy,
   Edit3,
   X,
@@ -58,28 +57,6 @@ const weatherIcons: Record<string, React.ReactNode> = {
   "黄昏/夜晚": <Moon className="w-5 h-5" />,
 };
 
-// 解析 images - 支持 string[] 或 JSON string
-function parseImages(images: string[] | string | undefined | null): string[] {
-  if (!images) return [];
-  if (Array.isArray(images)) return images;
-  try {
-    const parsed = JSON.parse(images);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-// 解析 JSON 字符串
-function parseJSON<T>(value: string | null | undefined, defaultValue: T): T {
-  if (!value) return defaultValue;
-  try {
-    return JSON.parse(value) as T;
-  } catch {
-    return defaultValue;
-  }
-}
-
 export default function TaskPage() {
   const params = useParams();
   const router = useRouter();
@@ -110,6 +87,7 @@ export default function TaskPage() {
     weather: "",
     lightingQualities: [] as string[],
     paintingStyles: [] as string[],
+    focus: "",
     description: "",
   });
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
@@ -148,6 +126,7 @@ export default function TaskPage() {
             weather: fetchedTask.weather || "",
             lightingQualities: parseJSON(fetchedTask.lightingQualities, []),
             paintingStyles: parseJSON(fetchedTask.paintingStyles, []),
+            focus: fetchedTask.focus || "",
             description: fetchedTask.description || "",
           });
         }
@@ -187,7 +166,7 @@ export default function TaskPage() {
         prev
           ? {
               ...prev,
-              status: "selecting",
+              status: "completed",
               images: mockImages,
             }
           : null
@@ -224,7 +203,7 @@ export default function TaskPage() {
         prev
           ? {
               ...prev,
-              status: "selecting",
+              status: "completed",
               images: mockImages.map((url) => url + "?" + Date.now()), // 模拟不同的图片
               selectedImage: undefined,
             }
@@ -237,38 +216,30 @@ export default function TaskPage() {
     }
   }
 
-  async function generateVideo() {
+  async function completeTask() {
     if (!selectedImage) return;
 
-    setGenerating(true);
     try {
-      const res = await fetch(`/api/tasks/${taskId}/generate-video`, {
+      const res = await fetch(`/api/tasks/${taskId}/complete`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl: selectedImage }),
+        body: JSON.stringify({
+          imageUrl: selectedImage,
+        }),
       });
       if (res.ok) {
         const data = await res.json();
         setTask(data.task);
+        // 完成后跳转到发布页面
+        router.push(`/task/${taskId}/publish`);
+      } else {
+        const error = await res.json();
+        console.error("Complete task failed:", error);
+        alert("完成创作失败，请重试");
       }
     } catch (error) {
-      console.error("Failed to generate video:", error);
-      // 模拟数据
-      setTask((prev) =>
-        prev
-          ? {
-              ...prev,
-              status: "completed",
-              videoUrl: "https://example.com/video.mp4",
-              title: "温馨治愈的家居时光，这就是我向往的生活",
-              content:
-                "在这个快节奏的世界里，找到属于自己的宁静角落是多么珍贵。一杯热茶，一本好书，阳光透过窗户洒在地板上，时间仿佛慢了下来。这就是生活本该有的样子。",
-              tags: ["#治愈系", "#家居生活", "#慢生活", "#生活美学", "#温馨小窝"],
-            }
-          : null
-      );
-    } finally {
-      setGenerating(false);
+      console.error("Failed to complete task:", error);
+      alert("完成创作失败，请重试");
     }
   }
 
@@ -352,7 +323,8 @@ export default function TaskPage() {
     config.coreEmotion &&
     config.architecturalStyle &&
     config.spaceFunction &&
-    config.weather;
+    config.weather &&
+    config.focus;
 
   if (loading) {
     return (
@@ -374,8 +346,9 @@ export default function TaskPage() {
   }
 
   const isDraft = task.status === "draft";
-  const isStep1 = task.status === "generating_images" || task.status === "selecting";
-  const isStep2 = task.status === "generating_video" || task.status === "completed";
+  const isGenerating = task.status === "generating_images";
+  const isCompleted = task.status === "completed";
+  const hasSelectedImage = !!task.selectedImage;
 
   const sectionNumber = (num: number) => (
     <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[var(--color-accent)] text-white text-xs font-medium">
@@ -620,6 +593,30 @@ export default function TaskPage() {
               </div>
             </section>
 
+            {/* 8. 构图重点（单选） */}
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                {sectionNumber(8)}
+                <h3 className="text-h3 text-[var(--color-text-primary)]">构图重点</h3>
+                <span className="text-xs text-[var(--color-error)]">*</span>
+              </div>
+              <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+                画面想要突出表现的主体
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {focuses.map((focus) => (
+                  <EmotionCard
+                    key={focus.id}
+                    label={focus.label}
+                    description={focus.description}
+                    useCase={focus.id === "space" ? "推荐用于场景展示" : focus.id === "person" ? "推荐用于人物故事" : focus.id === "balanced" ? "推荐用于生活记录" : "推荐用于细节表达"}
+                    selected={config.focus === focus.label}
+                    onClick={() => handleSingleSelect("focus", focus.label)}
+                  />
+                ))}
+              </div>
+            </section>
+
             {/* 补充描述 */}
             <section>
               <h3 className="text-h3 mb-4 text-[var(--color-text-primary)]">
@@ -688,7 +685,7 @@ export default function TaskPage() {
             </h1>
           </div>
           <StepIndicator
-            currentStep={isStep1 ? 1 : 2}
+            currentStep={isCompleted && hasSelectedImage ? 2 : 1}
             totalSteps={2}
           />
         </div>
@@ -696,15 +693,15 @@ export default function TaskPage() {
 
       {/* Content */}
       <div className="max-w-5xl mx-auto px-6 py-12">
-        {isStep1 ? (
+        {isGenerating || (isCompleted && !hasSelectedImage) ? (
           // Step 1: Select Image
           <div className="animate-fade-in-up">
             <div className="text-center mb-10">
               <h2 className="text-h1 mb-3 text-[var(--color-text-primary)]">
-                选择一张图片
+                挑选你最喜欢的一张
               </h2>
               <p className="text-body text-[var(--color-text-secondary)]">
-                点击任意图片查看大图，选择最满意的一张
+                点击选择最符合你心意的图片，它将用于发布内容
               </p>
             </div>
 
@@ -847,7 +844,7 @@ export default function TaskPage() {
                 </Button>
               </div>
 
-              {/* Right: Regenerate & Generate Video */}
+              {/* Right: Regenerate & Complete */}
               <div className="flex items-center gap-2">
                 <Button
                   variant="secondary"
@@ -858,66 +855,33 @@ export default function TaskPage() {
                   重新生成
                 </Button>
                 <Button
-                  onClick={() => {
-                    if (selectedImage) {
-                      generateVideo();
-                    }
-                  }}
-                  disabled={!selectedImage || generating}
+                  onClick={completeTask}
+                  disabled={!selectedImage}
                 >
-                  {generating ? (
-                    <>
-                      <div className="w-4 h-4 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      生成中...
-                    </>
-                  ) : (
-                    <>
-                      生成视频
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </>
-                  )}
+                  <Check className="w-4 h-4 mr-2" />
+                  完成创作
                 </Button>
               </div>
             </div>
           </div>
         ) : (
-          // Step 2: Video Result
+          // Step 2: Completed
           <div className="animate-fade-in-up">
             <div className="text-center mb-10">
               <h2 className="text-h1 mb-3 text-[var(--color-text-primary)]">
-                {task.status === "generating_video" ? "生成视频中..." : "视频已生成"}
+                创作完成！
               </h2>
             </div>
 
-            {/* Video Player */}
+            {/* Selected Image */}
             <div className="max-w-2xl mx-auto">
-              {task.videoUrl ? (
-                <div className="rounded-2xl overflow-hidden bg-black shadow-lg">
-                  <video
-                    src={task.videoUrl}
-                    controls
-                    className="w-full aspect-video"
-                    poster={task.selectedImage}
-                  />
-                </div>
-              ) : (
-                <div className="aspect-video bg-[var(--color-border)] rounded-2xl flex items-center justify-center">
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-3 border-[var(--color-border)] border-t-[var(--color-accent)] rounded-full animate-spin" />
-                    <p className="text-[var(--color-text-secondary)]">正在生成视频...</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Source Image */}
               {task.selectedImage && (
-                <div className="mt-6 flex items-center justify-center gap-4">
-                  <span className="text-sm text-[var(--color-text-secondary)]">
-                    基于你选择的图片生成
-                  </span>
-                  <button className="text-sm text-[var(--color-accent)] hover:underline">
-                    查看原图
-                  </button>
+                <div className="rounded-2xl overflow-hidden bg-black shadow-lg">
+                  <img
+                    src={task.selectedImage}
+                    alt="Selected"
+                    className="w-full aspect-video object-cover"
+                  />
                 </div>
               )}
 
@@ -925,12 +889,12 @@ export default function TaskPage() {
               <div className="flex justify-center gap-4 mt-8">
                 <Button variant="secondary" onClick={() => router.push(`/task/${task.id}`)}>
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  重新生成视频
+                  重新选择图片
                 </Button>
                 <Link href={`/task/${task.id}/publish`}>
                   <Button>
                     <Check className="w-4 h-4 mr-2" />
-                    完成创作
+                    查看发布内容
                   </Button>
                 </Link>
               </div>

@@ -260,14 +260,6 @@ export const timesByCategory = {
   "天气": times.filter(t => t.category === "天气"),
 };
 
-/** @deprecated 不再需要 */
-export const focuses = [
-  { id: "space", label: "空间为主", description: "展示环境，人物小或 absent" },
-  { id: "person", label: "人物为主", description: "传统人像，突出人物" },
-  { id: "balanced", label: "人与空间平衡", description: "两者兼顾" },
-  { id: "detail", label: "细节特写", description: "聚焦某个局部" },
-];
-
 /** @deprecated 使用 lightingQualities 替代 */
 export const lightings = [
   { id: "natural", label: "自然光", description: "窗户光，柔和真实" },
@@ -318,16 +310,47 @@ export const culturesByRegion = {
 export type TaskStatus =
   | "draft"
   | "generating_images"
-  | "selecting"
-  | "generating_video"
   | "completed";
+
+// 遗留状态类型（用于兼容旧数据）
+export type LegacyTaskStatus = "selecting" | "generating_video";
+
+// 状态标签映射
+export const statusLabels: Record<TaskStatus | LegacyTaskStatus, string> = {
+  draft: "待配置",
+  generating_images: "生成中",
+  completed: "已完成",
+  // 遗留状态
+  selecting: "生成中",
+  generating_video: "处理中",
+};
+
+// 状态颜色映射
+export const statusColors: Record<TaskStatus | LegacyTaskStatus, string> = {
+  draft: "bg-gray-500",
+  generating_images: "bg-[var(--color-loading)]",
+  completed: "bg-[var(--color-success)]",
+  // 遗留状态
+  selecting: "bg-[var(--color-loading)]",
+  generating_video: "bg-[var(--color-loading)]",
+};
+
+// 获取状态标签
+export function getStatusLabel(status: TaskStatus | LegacyTaskStatus): string {
+  return statusLabels[status] || status;
+}
+
+// 获取状态颜色
+export function getStatusColor(status: TaskStatus | LegacyTaskStatus): string {
+  return statusColors[status] || "bg-gray-400";
+}
 
 // ========== Task 类型 - 言画配置体系 v3 ==========
 export interface Task {
   id: string;
   status: TaskStatus;
 
-  // 言画配置体系 v3 - 7个维度
+  // 言画配置体系 v3 - 8个维度
   coreEmotion: string;           // 维度1：核心情绪 - 单选
   architecturalStyle: string;    // 维度2：建筑风格/文化基因 - 单选
   region?: string;               // 维度3：地域 - 单选，可选
@@ -335,6 +358,7 @@ export interface Task {
   weather: string;               // 维度5：天气/氛围 - 单选
   lightingQualities: string[];   // 维度6：光影质感 - 多选
   paintingStyles: string[];      // 维度7：绘画风格 - 多选
+  focus: string;                 // 维度8：构图重点 - 单选
 
   // 补充描述
   description?: string;
@@ -342,7 +366,6 @@ export interface Task {
   // 输出
   images?: string[];
   selectedImage?: string;
-  videoUrl?: string;
 
   // 发布内容
   title?: string;
@@ -353,6 +376,14 @@ export interface Task {
   createdAt: string;
   updatedAt: string;
 }
+
+// ========== 维度8：构图重点（单选）==========
+export const focuses = [
+  { id: "space", label: "空间为主", description: "展示环境，人物小或 absent" },
+  { id: "person", label: "人物为主", description: "传统人像，突出人物" },
+  { id: "balanced", label: "人与空间平衡", description: "两者兼顾" },
+  { id: "detail", label: "细节特写", description: "聚焦某个局部" },
+] as const;
 
 // ========== 向后兼容的类型（用于旧数据迁移）==========
 /** @deprecated 使用 Task 替代 */

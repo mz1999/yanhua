@@ -14,7 +14,7 @@ model Task {
   id            String   @id @default(uuid())
   status        String   // 'generating_images' | 'selecting' | 'generating_video' | 'completed'
 
-  // 言画配置体系 v3 - 7个维度
+  // 言画配置体系 v3 - 8个维度
   coreEmotion       String   // 维度1：核心情绪 - 单选
   architecturalStyle String  // 维度2：建筑风格/文化基因 - 单选
   region            String?  // 维度3：地域 - 单选，可选
@@ -22,6 +22,7 @@ model Task {
   weather           String   // 维度5：天气/氛围 - 单选
   lightingQualities String   // JSON 数组，维度6：光影质感 - 多选
   paintingStyles    String   // JSON 数组，维度7：绘画风格 - 多选
+  focus             String   // 维度8：构图重点 - 单选
 
   description       String?  // 补充描述
 
@@ -31,7 +32,6 @@ model Task {
   scene             String?  @default("") // v2 空间类型
   culture           String?  @default("") // v2 文化场景
   time              String?  @default("[]") // v2 时间氛围
-  focus             String?  @default("") // v2 构图重点
   lighting          String?  @default("") // v2 光影
   style             String?  @default("") // v1 旧风格字段
   composition       String?  @default("") // v1 旧构图字段
@@ -39,7 +39,6 @@ model Task {
   // 输出
   images        String?  // JSON 数组，4张图片URL
   selectedImage String?  // 选中的图片URL
-  videoUrl      String?  // 生成的视频URL
 
   // 发布内容
   title         String?

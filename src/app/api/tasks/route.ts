@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // 言画配置体系 v3 - 7个维度
+    // 言画配置体系 v3 - 8个维度
     const {
       coreEmotion,
       architecturalStyle,
@@ -31,13 +31,14 @@ export async function POST(request: NextRequest) {
       weather,
       lightingQualities = [],
       paintingStyles = [],
+      focus,
       description,
     } = body;
 
     const task = await prisma.task.create({
       data: {
         status: "generating_images",
-        // 言画配置体系 v3
+        // 言画配置体系 v3 - 8个维度
         coreEmotion,
         architecturalStyle,
         region,
@@ -45,6 +46,7 @@ export async function POST(request: NextRequest) {
         weather,
         lightingQualities: JSON.stringify(lightingQualities),
         paintingStyles: JSON.stringify(paintingStyles),
+        focus,
         description,
       },
     });

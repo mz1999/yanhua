@@ -8,8 +8,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "言画 - 视频创作",
-  description: "用文字创作治愈系视频",
+  title: "言画 - 治愈系图片创作",
+  description: "用文字配置创作独特的治愈系空间图片",
 };
 
 export default function RootLayout({
