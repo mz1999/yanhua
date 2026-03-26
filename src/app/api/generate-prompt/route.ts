@@ -258,6 +258,12 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
+
+    // 调试：输出完整响应结构
+    console.log("\n========== 原始响应结构 ==========");
+    console.log(JSON.stringify(data, null, 2));
+    console.log("================================\n");
+
     const message = data.choices[0]?.message;
     const rawContent = message?.content?.trim() || "";
     const reasoningContent = message?.reasoning_content || "";
