@@ -21,6 +21,9 @@ RUN npm run build
 # 生产阶段
 FROM node:20-slim
 
+# 安装 OpenSSL（Prisma 必需）
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # 复制必要文件
