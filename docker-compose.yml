@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  app:
+    image: yanhua-app:latest
+    container_name: yanhua-app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/data/dev.db
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - LLM_API_URL=${LLM_API_URL:-https://api.siliconflow.cn/v1/chat/completions}
+      - LLM_MODEL=${LLM_MODEL:-deepseek-ai/DeepSeek-V3.2}
+      - JIMENG_API_URL=${JIMENG_API_URL}
+      - JIMENG_API_KEY=${JIMENG_API_KEY}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

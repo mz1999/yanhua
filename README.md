@@ -58,6 +58,79 @@ npm run dev
 
 访问 http://localhost:3000
 
+## Docker 部署
+
+### 前置要求
+
+- 已安装 Docker 和 Docker Compose
+- 即梦服务（jimeng-free-api-all）已部署并运行在 `http://宿主机IP:8000`
+
+### 部署步骤
+
+#### 1. 构建镜像
+
+```bash
+# 克隆项目
+git clone <repository-url>
+cd yanhua
+
+# 构建 Docker 镜像
+docker build -t yanhua-app:latest .
+```
+
+#### 2. 配置环境变量
+
+```bash
+# 复制示例配置文件
+cp .env.docker.example .env
+
+# 编辑 .env 文件，填写以下必需项
+nano .env
+```
+
+必需配置：
+
+| 配置项 | 说明 | 示例值 |
+|--------|------|--------|
+| `DEEPSEEK_API_KEY` | DeepSeek/SiliconFlow API 密钥 | `sk-xxx...` |
+| `JIMENG_API_KEY` | 即梦 session ID | 在即梦服务页面获取 |
+| `JIMENG_API_URL` | 即梦服务地址 | `http://172.17.0.1:8000` |
+
+获取宿主机 IP：
+```bash
+ip addr show docker0 | grep inet
+# 示例输出：inet 172.17.0.1/16 brd 172.17.255.255
+# 则 JIMENG_API_URL=http://172.17.0.1:8000
+```
+
+#### 3. 启动服务
+
+```bash
+# 启动容器
+docker-compose up -d
+
+# 查看日志
+docker-compose logs -f
+
+# 停止服务
+docker-compose down
+```
+
+访问 http://localhost:3000
+
+### 常用命令
+
+```bash
+# 查看容器状态
+docker-compose ps
+
+# 重启服务
+docker-compose restart
+
+# 进入容器调试
+docker exec -it yanhua-app sh
+```
+
 ## 技术栈
 
 - **框架**: Next.js 14 + React + TypeScript

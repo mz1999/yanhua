@@ -1,0 +1,41 @@
+node_modules
+npm-debug.log
+yarn-error.log
+.DS_Store
+.env
+.env.local
+.env.*.local
+.git
+.gitignore
+README.md
+.eslintrc
+.prettierrc
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Next.js
+.next
+out
+
+# Prisma - 不复制本地数据库文件
+*.db
+*.db-journal
+prisma/*.db
+prisma/*.db-journal
+data/
+
+# 测试文件
+__tests__
+coverage
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+
+# Docker 文件本身
+Dockerfile
+docker-compose.yml
+.dockerignore
