@@ -13,7 +13,7 @@ RUN npm ci --registry https://registry.npmmirror.com/
 COPY . .
 
 # 生成 Prisma Client
-RUN npx prisma generate
+RUN ./node_modules/.bin/prisma generate
 
 # 构建 Next.js 应用
 RUN npm run build
@@ -30,6 +30,7 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+# 复制 prisma 相关文件
 COPY --from=builder /app/prisma ./prisma
 
 # 创建数据目录
@@ -46,4 +47,4 @@ VOLUME ["/app/data"]
 EXPOSE 3000
 
 # 启动时先执行数据库迁移，然后启动应用
-CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
+CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && node server.js"]
