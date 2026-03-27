@@ -1,20 +1,28 @@
 import type { Metadata } from "next";
-import { Noto_Sans_SC, Noto_Serif_SC } from "next/font/google";
 import "./globals.css";
 
-const notoSans = Noto_Sans_SC({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  variable: "--font-sans",
-  display: "swap",
-});
+// 使用系统字体栈，避免构建时下载 Google Fonts
+const systemFontStack = [
+  "-apple-system",
+  "BlinkMacSystemFont",
+  '"Segoe UI"',
+  "Roboto",
+  '"Helvetica Neue"',
+  "Arial",
+  '"Noto Sans"',
+  "sans-serif",
+  '"Apple Color Emoji"',
+  '"Segoe UI Emoji"',
+  '"Segoe UI Symbol"',
+  '"Noto Color Emoji"',
+].join(",");
 
-const notoSerif = Noto_Serif_SC({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-serif",
-  display: "swap",
-});
+const serifFontStack = [
+  "Georgia",
+  '"Times New Roman"',
+  "Times",
+  "serif",
+].join(",");
 
 export const metadata: Metadata = {
   title: "言画 - 治愈系空间创作",
@@ -27,8 +35,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN" className={`${notoSans.variable} ${notoSerif.variable}`}>
-      <body className="antialiased">
+    <html lang="zh-CN">
+      <body
+        className="antialiased"
+        style={{
+          fontFamily: systemFontStack,
+        }}
+      >
+        <div style={{ fontFamily: serifFontStack }} className="hidden" aria-hidden="true" />
         {children}
       </body>
     </html>
