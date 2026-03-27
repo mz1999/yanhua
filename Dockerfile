@@ -21,6 +21,9 @@ RUN npm run build
 # 生产阶段 - 使用更小的基础镜像
 FROM node:20-alpine
 
+# 安装 OpenSSL（Prisma 必需）
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 
 # 复制必要文件
@@ -30,10 +33,11 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
-# 复制 prisma 相关文件
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/package-lock.json ./package-lock.json
+
+# 安装 Prisma CLI（用于数据库迁移）
+RUN npm install prisma@5.22.0 --registry https://registry.npmmirror.com/
 
 # 创建数据目录
 RUN mkdir -p /app/data
@@ -49,4 +53,4 @@ VOLUME ["/app/data"]
 EXPOSE 3000
 
 # 启动时先执行数据库迁移，然后启动应用
-CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && node server.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
