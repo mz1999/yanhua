@@ -52,5 +52,5 @@ VOLUME ["/app/data"]
 
 EXPOSE 3000
 
-# 启动时先同步数据库 schema，然后启动应用
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node server.js"]
+# 启动时先执行数据库迁移，然后启动应用
+CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
