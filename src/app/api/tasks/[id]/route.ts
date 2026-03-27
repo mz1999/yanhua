@@ -16,7 +16,20 @@ export async function GET(
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ task });
+    // 解析 JSON 字符串字段
+    const parsedTask = {
+      ...task,
+      lightingQualities: task.lightingQualities
+        ? JSON.parse(task.lightingQualities)
+        : [],
+      paintingStyles: task.paintingStyles
+        ? JSON.parse(task.paintingStyles)
+        : [],
+      images: task.images ? JSON.parse(task.images) : undefined,
+      tags: task.tags ? JSON.parse(task.tags) : undefined,
+    };
+
+    return NextResponse.json({ task: parsedTask });
   } catch (error) {
     console.error("Failed to fetch task:", error);
     return NextResponse.json(
@@ -89,6 +102,40 @@ export async function PUT(
     console.error("Failed to update task:", error);
     return NextResponse.json(
       { error: "Failed to update task" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/tasks/[id] - 删除任务
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    // 1. 检查任务是否存在
+    const task = await prisma.task.findUnique({
+      where: { id },
+    });
+
+    if (!task) {
+      return NextResponse.json({ error: "Task not found" }, { status: 404 });
+    }
+
+    // 2. 删除任务
+    await prisma.task.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({
+      message: "Task deleted successfully",
+    });
+  } catch (error) {
+    console.error("Failed to delete task:", error);
+    return NextResponse.json(
+      { error: "Failed to delete task" },
       { status: 500 }
     );
   }

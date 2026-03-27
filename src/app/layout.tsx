@@ -1,15 +1,24 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Noto_Sans_SC, Noto_Serif_SC } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const notoSans = Noto_Sans_SC({
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const notoSerif = Noto_Serif_SC({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-serif",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "言画 - 治愈系图片创作",
-  description: "用文字配置创作独特的治愈系空间图片",
+  title: "言画 - 治愈系空间创作",
+  description: "以文字为墨，绘心中之境。用诗意配置创作独特的治愈系空间图片。",
 };
 
 export default function RootLayout({
@@ -18,8 +27,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN" className={`${inter.variable} antialiased`}>
-      <body className="min-h-screen bg-[var(--color-bg)]">
+    <html lang="zh-CN" className={`${notoSans.variable} ${notoSerif.variable}`}>
+      <body className="antialiased">
         {children}
       </body>
     </html>

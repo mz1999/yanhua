@@ -38,7 +38,7 @@ export async function POST(
     // 3. 调用即梦 API 生成图片（直接使用自定义提示词，跳过 DeepSeek）
     const imageUrls = await generateImagesWithJimeng(customPrompt, DEFAULT_JIMENG_MODEL);
 
-    // 4. 更新任务状态和图片
+    // 4. 更新任务状态、图片和提示词
     const updatedTask = await prisma.task.update({
       where: { id },
       data: {
@@ -46,6 +46,7 @@ export async function POST(
         images: JSON.stringify(imageUrls),
         // 清除之前的选择
         selectedImage: null,
+        prompt: customPrompt,
       },
     });
 

@@ -39,6 +39,7 @@ model Task {
   // 输出
   images        String?  // JSON 数组，4张图片URL
   selectedImage String?  // 选中的图片URL
+  prompt        String?  // 生成的提示词
 
   // 发布内容
   title         String?

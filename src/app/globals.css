@@ -1,121 +1,205 @@
 @import "tailwindcss";
 
 :root {
-  /* 基础色板 */
-  --color-bg: #fafafa;
-  --color-surface: #ffffff;
-  --color-elevated: #ffffff;
+  /* 中国传统色彩体系 */
+  --color-xuanzhi: #f5f0e8;      /* 宣纸黄 - 主背景 */
+  --color-yuebai: #f7f9fa;       /* 月白 - 卡片背景 */
+  --color-zhusha: #c93756;       /* 朱砂 - 强调色 */
+  --color-zhusha-light: #e85d75; /* 朱砂浅 */
+  --color-qingdai: #3a6b6f;      /* 青黛 - 次要强调 */
+  --color-moshui: #1a1a1a;       /* 墨色 - 主文字 */
+  --color-huise: #6b6b6b;        /* 灰色 - 次要文字 */
+  --color-danyan: #9a9a9a;       /* 淡墨 - 辅助文字 */
+  --color-yanzhi: rgba(0,0,0,0.04); /* 淡墨痕 - 边框 */
+  --color-shuiyin: rgba(26,26,26,0.02); /* 水印 - 极淡背景 */
 
-  /* 文字色阶 */
-  --color-text-primary: #0a0a0a;
-  --color-text-secondary: #525252;
-  --color-text-tertiary: #a3a3a3;
+  /* 字体 - next/font 提供 */
+  --font-serif: "Noto Serif SC", "Source Han Serif SC", "STSong", serif;
+  --font-sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
 
-  /* 强调色 - 极深蓝灰 */
-  --color-accent: #1a1a1a;
-  --color-accent-hover: #000000;
+  /* 间距系统 - 东方美学的大留白 */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-2xl: 64px;
+  --space-3xl: 96px;
+  --space-4xl: 128px;
 
-  /* 状态色 - 饱和度极低 */
-  --color-success: #10b981;
-  --color-error: #ef4444;
-  --color-loading: #6366f1;
+  /* 动效 - 如水流淌 */
+  --ease-water: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-ink: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-instant: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 600ms;
+  --duration-ink: 800ms;
 
-  /* 边框 - 极淡 */
-  --color-border: #e5e5e5;
-  --color-border-hover: #d4d4d4;
-
-  /* 间距系统 - 基础单位 4px */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-12: 48px;
-  --space-16: 64px;
-  --space-24: 96px;
-
-  /* 动效 */
-  --duration-micro: 150ms;
-  --duration-standard: 200ms;
-  --duration-complex: 300ms;
-  --duration-enter: 500ms;
-  --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* 阴影 - 如水墨晕染 */
+  --shadow-ink-sm: 0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02);
+  --shadow-ink: 0 4px 12px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.03);
+  --shadow-ink-lg: 0 12px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+  --shadow-ink-hover: 0 20px 60px rgba(0,0,0,0.12), 0 8px 20px rgba(0,0,0,0.06);
 
   /* 旧版兼容 */
-  --background: var(--color-bg);
-  --foreground: var(--color-text-primary);
+  --background: var(--color-xuanzhi);
+  --foreground: var(--color-moshui);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "SF Pro Display", "Inter", -apple-system, sans-serif;
-  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
+}
+
+/* 基础样式 */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--color-bg);
-  color: var(--color-text-primary);
-  font-family: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--color-xuanzhi);
+  color: var(--color-moshui);
+  font-family: var(--font-sans), "PingFang SC", "Microsoft YaHei", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.7;
+  min-height: 100vh;
 }
 
-/* 字体系统 */
-.text-display {
-  font-size: 48px;
+/* 宣纸纹理背景 */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.015;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 字体系统 - 中式排版 */
+.font-serif {
+  font-family: var(--font-serif), "Source Han Serif SC", "STSong", serif;
+}
+
+.font-sans {
+  font-family: var(--font-sans), "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+/* 标题层级 */
+.text-hero {
+  font-family: var(--font-serif);
+  font-size: clamp(2.5rem, 6vw, 4rem);
   font-weight: 300;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-}
-
-.text-h1 {
-  font-size: 32px;
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-}
-
-.text-h2 {
-  font-size: 24px;
-  font-weight: 600;
   line-height: 1.3;
+  letter-spacing: 0.05em;
 }
 
-.text-h3 {
-  font-size: 18px;
-  font-weight: 500;
+.text-title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 400;
   line-height: 1.4;
+  letter-spacing: 0.03em;
+}
+
+.text-subtitle {
+  font-family: var(--font-serif);
+  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
 }
 
 .text-body {
-  font-size: 16px;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.8;
+}
+
+.text-small {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
   font-weight: 400;
   line-height: 1.6;
 }
 
-.text-small {
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
-}
-
 .text-caption {
-  font-size: 12px;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
   font-weight: 500;
-  line-height: 1.4;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
-/* 动画 */
+/* 诗意装饰文字 */
+.text-poetry {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  font-weight: 300;
+  line-height: 2;
+  letter-spacing: 0.1em;
+  color: var(--color-huise);
+}
+
+/* 印章效果 */
+.seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--color-zhusha);
+  color: white;
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(201, 55, 86, 0.3);
+}
+
+.seal-sm {
+  width: 32px;
+  height: 32px;
+  font-size: 0.875rem;
+}
+
+/* 水墨动画 */
+@keyframes inkSpread {
+  from {
+    clip-path: circle(0% at 50% 50%);
+    opacity: 0;
+  }
+  to {
+    clip-path: circle(150% at 50% 50%);
+    opacity: 1;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
@@ -123,38 +207,360 @@ body {
   }
 }
 
-@keyframes pulse-subtle {
-  0%, 100% {
-    opacity: 1;
+@keyframes brushStroke {
+  from {
+    stroke-dashoffset: 1000;
   }
-  50% {
-    opacity: 0.7;
+  to {
+    stroke-dashoffset: 0;
   }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-ink-spread {
+  animation: inkSpread var(--duration-ink) var(--ease-ink) forwards;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp var(--duration-enter) var(--ease-out) forwards;
+  animation: fadeInUp var(--duration-slow) var(--ease-water) forwards;
 }
 
-.animate-pulse-subtle {
-  animation: pulse-subtle 2s var(--ease-in-out) infinite;
+/* 延迟动画类 */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* 卡片样式 - 宣纸质感 */
+.card-xuanzhi {
+  background: var(--color-yuebai);
+  border: 1px solid var(--color-yanzhi);
+  border-radius: 8px;
+  box-shadow: var(--shadow-ink);
+  transition: all var(--duration-normal) var(--ease-water);
 }
 
-/* 滚动条样式 */
+.card-xuanzhi:hover {
+  box-shadow: var(--shadow-ink-hover);
+  transform: translateY(-4px);
+}
+
+/* 按钮样式 - 朱砂印章 */
+.btn-zhusha {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: var(--color-zhusha);
+  color: white;
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-water);
+  box-shadow: 0 2px 8px rgba(201, 55, 86, 0.3);
+}
+
+.btn-zhusha:hover {
+  background: var(--color-zhusha-light);
+  box-shadow: 0 4px 16px rgba(201, 55, 86, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-zhusha:active {
+  transform: translateY(0);
+}
+
+/* 青黛次要按钮 */
+.btn-qingdai {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: transparent;
+  color: var(--color-qingdai);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid var(--color-qingdai);
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-water);
+}
+
+.btn-qingdai:hover {
+  background: var(--color-qingdai);
+  color: white;
+}
+
+/* 墨线按钮 */
+.btn-moxian {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--color-huise);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 400;
+  border: none;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-water);
+  position: relative;
+}
+
+.btn-moxian::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: var(--color-yanzhi);
+  transition: all var(--duration-normal) var(--ease-water);
+}
+
+.btn-moxian:hover {
+  color: var(--color-moshui);
+}
+
+.btn-moxian:hover::after {
+  background: var(--color-moshui);
+  left: 10px;
+  right: 10px;
+}
+
+/* 输入框样式 */
+.input-xuanzhi {
+  width: 100%;
+  padding: 14px 18px;
+  background: var(--color-yuebai);
+  border: 1px solid var(--color-yanzhi);
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  color: var(--color-moshui);
+  transition: all var(--duration-normal) var(--ease-water);
+}
+
+.input-xuanzhi:focus {
+  outline: none;
+  border-color: var(--color-qingdai);
+  box-shadow: 0 0 0 3px rgba(58, 107, 111, 0.1);
+}
+
+.input-xuanzhi::placeholder {
+  color: var(--color-danyan);
+}
+
+/* 分隔线 - 如墨线 */
+.divider-moxian {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-yanzhi) 20%,
+    var(--color-yanzhi) 80%,
+    transparent 100%
+  );
+}
+
+/* 标签样式 */
+.tag-xuanzhi {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  background: var(--color-shuiyin);
+  border: 1px solid var(--color-yanzhi);
+  border-radius: 100px;
+  font-size: 0.8125rem;
+  color: var(--color-huise);
+  transition: all var(--duration-normal) var(--ease-water);
+}
+
+.tag-xuanzhi:hover {
+  background: var(--color-yanzhi);
+  color: var(--color-moshui);
+}
+
+.tag-zhusha {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  background: rgba(201, 55, 86, 0.08);
+  border: 1px solid rgba(201, 55, 86, 0.2);
+  border-radius: 100px;
+  font-size: 0.8125rem;
+  color: var(--color-zhusha);
+}
+
+/* 滚动条 - 极简 */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-bg);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border-hover);
-  border-radius: 4px;
+  background: var(--color-yanzhi);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-tertiary);
+  background: var(--color-danyan);
+}
+
+/* 选中样式 */
+::selection {
+  background: rgba(58, 107, 111, 0.2);
+  color: var(--color-moshui);
+}
+
+/* 图片容器 - 画框效果 */
+.frame-hua {
+  position: relative;
+  padding: 12px;
+  background: var(--color-yuebai);
+  border: 1px solid var(--color-yanzhi);
+  box-shadow: var(--shadow-ink);
+}
+
+.frame-hua::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid var(--color-yanzhi);
+  pointer-events: none;
+}
+
+.frame-hua img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 状态徽章 */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-draft {
+  background: var(--color-shuiyin);
+  color: var(--color-huise);
+}
+
+.status-generating {
+  background: rgba(58, 107, 111, 0.1);
+  color: var(--color-qingdai);
+}
+
+.status-completed {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+/* 加载动画 - 水墨滴 */
+.loading-mo {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.loading-mo span {
+  width: 8px;
+  height: 8px;
+  background: var(--color-zhusha);
+  border-radius: 50%;
+  animation: inkDrop 1.4s ease-in-out infinite both;
+}
+
+.loading-mo span:nth-child(1) { animation-delay: -0.32s; }
+.loading-mo span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes inkDrop {
+  0%, 80%, 100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 步骤指示器 */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.step-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-yanzhi);
+  transition: all var(--duration-normal) var(--ease-water);
+}
+
+.step-dot.active {
+  background: var(--color-zhusha);
+  box-shadow: 0 0 0 4px rgba(201, 55, 86, 0.15);
+}
+
+.step-dot.completed {
+  background: var(--color-qingdai);
+}
+
+.step-line {
+  flex: 1;
+  height: 1px;
+  background: var(--color-yanzhi);
+  max-width: 60px;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .text-hero {
+    font-size: 2rem;
+  }
+
+  .text-title {
+    font-size: 1.5rem;
+  }
+
+  body {
+    line-height: 1.6;
+  }
 }

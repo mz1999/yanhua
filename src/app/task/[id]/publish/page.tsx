@@ -44,7 +44,8 @@ export default function PublishPage() {
 
   async function handleCopyAll() {
     if (!task) return;
-    const all = `【标题】\n${task.title || ""}\n\n【文案】\n${task.content || ""}\n\n【标签】\n${task.tags?.join(" ") || ""}`;
+    const tags = task.tags || [];
+    const all = `【标题】\n${task.title || ""}\n\n【文案】\n${task.content || ""}\n\n【标签】\n${tags.join(" ")}`;
     await navigator.clipboard.writeText(all);
     setCopied("all");
     setTimeout(() => setCopied(null), 2000);
@@ -68,6 +69,9 @@ export default function PublishPage() {
       </div>
     );
   }
+
+  // 解析 tags，确保是数组
+  const tags = task.tags || ["#治愈系", "#家居生活", "#慢生活", "#生活美学", "#温馨小窝"];
 
   return (
     <main className="min-h-screen">
@@ -107,7 +111,7 @@ export default function PublishPage() {
             <img
               src={task.selectedImage}
               alt="Selected"
-              className="w-full aspect-video object-cover"
+              className="w-full h-auto"
             />
           </div>
         )}
@@ -171,7 +175,7 @@ export default function PublishPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => handleCopy(task.tags?.join(" ") || "", "tags")}
+                onClick={() => handleCopy(tags.join(" "), "tags")}
               >
                 {copied === "tags" ? (
                   <Check className="w-4 h-4 mr-1" />
@@ -182,7 +186,7 @@ export default function PublishPage() {
               </Button>
             </div>
             <div className="flex flex-wrap gap-2">
-              {(task.tags || ["#治愈系", "#家居生活", "#慢生活", "#生活美学", "#温馨小窝"]).map(
+              {tags.map(
                 (tag) => (
                   <span
                     key={tag}
