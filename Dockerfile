@@ -1,5 +1,5 @@
 # 构建阶段
-FROM node:20-alpine AS builder
+FROM node:20-slim AS builder
 
 WORKDIR /app
 
@@ -18,11 +18,8 @@ RUN ./node_modules/.bin/prisma generate
 # 构建 Next.js 应用
 RUN npm run build
 
-# 生产阶段 - 使用更小的基础镜像
-FROM node:20-alpine
-
-# 安装 OpenSSL（Prisma 必需）
-RUN apk add --no-cache openssl
+# 生产阶段
+FROM node:20-slim
 
 WORKDIR /app
 
